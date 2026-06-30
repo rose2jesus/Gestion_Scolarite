@@ -524,7 +524,7 @@ class OngletModules(tk.Frame):
 
         bbar = bandeau_boutons(self, [
             (" Ajouter",   self.ajouter,   C["accent"],  C["accent_h"], "#FFF"),
-            ("✎ Modifier",   self.modifier,  C["gold"],    C["gold_h"],   C["text"]),
+            (" Modifier",   self.modifier,  C["gold"],    C["gold_h"],   C["text"]),
             ("✕ Supprimer",  self.supprimer, C["danger"],  C["danger_h"], "#FFF"),
             ("↺ Actualiser", self.charger,   C["text2"],   "#4B5563",     "#FFF"),
             ("⌫ Effacer",    self._effacer,  C["border"],  "#C0B8B0",     C["text"]),
