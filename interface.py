@@ -451,7 +451,7 @@ class OngletEnseignants(tk.Frame):
         if messagebox.askyesno("Confirmer", f"Supprimer {nom} ?"):
             try:
                 bd.supprimer_enseignant(self._id)
-                messagebox.showinfo("Supprimé", "Enseignant supprimé.")
+                messagebox.showinfo("Delete", "Enseignant supprimé.")
                 self.charger()
             except Exception as e:
                 messagebox.showerror("Erreur", str(e))
@@ -526,8 +526,8 @@ class OngletModules(tk.Frame):
             (" Ajouter",   self.ajouter,   C["accent"],  C["accent_h"], "#FFF"),
             (" Modifier",   self.modifier,  C["gold"],    C["gold_h"],   C["text"]),
             ("✕ Supprimer",  self.supprimer, C["danger"],  C["danger_h"], "#FFF"),
-            ("↺ Actualiser", self.charger,   C["text2"],   "#4B5563",     "#FFF"),
-            ("⌫ Effacer",    self._effacer,  C["border"],  "#C0B8B0",     C["text"]),
+            (" Actualiser", self.charger,   C["text2"],   "#4B5563",     "#FFF"),
+            (" Effacer",    self._effacer,  C["border"],  "#C0B8B0",     C["text"]),
         ])
         bbar.grid(row=3, column=0, sticky="ew", padx=PAD, pady=(0, PAD))
 
