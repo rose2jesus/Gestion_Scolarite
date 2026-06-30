@@ -1,8 +1,27 @@
+# ============================================================
+# basedonnees.py — Connexion et opérations MySQL
+# SIGS - Système de Gestion de Scolarité
+# USSEIN | L3 Informatique | 2024-2025
+# ============================================================
+
 import mysql.connector
 from mysql.connector import Error
 
-
+# ── Connexion à la base de données ─────────────────────────
 try:
+    # 1. Connexion au serveur MySQL (sans base précise)
+    db_init = mysql.connector.connect(
+        host="localhost",
+        user="root",
+        password="12345"
+    )
+    curseur_init = db_init.cursor()
+    curseur_init.execute("CREATE DATABASE IF NOT EXISTS scolarite_db")
+    db_init.commit()
+    curseur_init.close()
+    db_init.close()
+
+    # 2. Connexion à la base scolarite_db (maintenant garantie d'exister)
     db = mysql.connector.connect(
         host="localhost",
         user="root",
@@ -13,11 +32,15 @@ try:
         print("Connexion à la base de données réussie !")
 except Error as e:
     print("Échec de la connexion :", e)
+    raise SystemExit(
+        "Impossible de se connecter à MySQL. Vérifiez que le service "
+        "MySQL est démarré et que le mot de passe est correct."
+    )
 
-
+# Création du curseur
 curseur = db.cursor()
 
-
+# ── Création des tables ─────────────────────────────────────
 
 curseur.execute("""
     CREATE TABLE IF NOT EXISTS etudiants (
@@ -84,7 +107,7 @@ db.commit()
 print("Tables créées avec succès !")
 
 
-
+# ── Insertion des données de test (seulement si tables vides) ─
 
 curseur.execute("SELECT COUNT(*) FROM enseignants")
 if curseur.fetchone()[0] == 0:
@@ -104,11 +127,11 @@ if curseur.fetchone()[0] == 0:
 curseur.execute("SELECT COUNT(*) FROM etudiants")
 if curseur.fetchone()[0] == 0:
     etudiants = [
-        ("ETU2024001", "DIA",    "Khadidiatou", "2002-03-15", "kdia@etud.ussein.edu.sn",    "774111111", "Informatique", "L3", 2022),
-        ("ETU2024002", "FALL",  "Ousmane", "2001-07-22", "ofall@etud.ussein.edu.sn",  "774222222", "MPI",          "L2", 2023),
-        ("ETU2024003", "GUEYE", "Mariama", "2003-01-10", "mgueye@etud.ussein.ed.sn", "774333333", "AgroTIC",      "L1", 2024),
-        ("ETU2024004", "SYLVA",  "Rose",  "2000-11-05", "cdiop@etud.ussein.edu.sn",  "774444444", "Informatique", "L3", 2022),
-        ("ETU2024005", "MBAYE", "Rokhaya", "2002-06-28", "rmbaye@etud.ussein.edu.sn", "774555555", "MPI",          "L2", 2023),
+        ("ETU2024001", "BA",    "Aminata", "2002-03-15", "aba@etud.ussein.sn",    "774111111", "Informatique", "L3", 2022),
+        ("ETU2024002", "FALL",  "Ousmane", "2001-07-22", "ofall@etud.ussein.sn",  "774222222", "MPI",          "L2", 2023),
+        ("ETU2024003", "GUEYE", "Mariama", "2003-01-10", "mgueye@etud.ussein.sn", "774333333", "AgroTIC",      "L1", 2024),
+        ("ETU2024004", "SYLVA",  "Rose",  "2000-11-05", "rsylva@etud.ussein.sn",  "774444444", "Informatique", "L3", 2022),
+        ("ETU2024005", "MBAYE", "Rokhaya", "2002-06-28", "rmbaye@etud.ussein.sn", "774555555", "MPI",          "L2", 2023),
     ]
     for etud in etudiants:
         curseur.execute("""
@@ -121,10 +144,10 @@ if curseur.fetchone()[0] == 0:
 curseur.execute("SELECT COUNT(*) FROM modules")
 if curseur.fetchone()[0] == 0:
     modules = [
-        ("INF301", "Programmation Python 2",                 4, 45, "Informatique", "L3", "S6", 1),
-        ("INF302", "Base de Données ",               3, 30, "Informatique", "L3", "S5", 1),
+        ("INF301", "Programmation Python 2",                 4, 45, "Informatique", "L3", "S5", 1),
+        ("INF302", "Base de Données Avancées",               3, 30, "Informatique", "L3", "S5", 1),
         ("MAT201", "Algèbre Linéaire",                      3, 30, "MPI",          "L2", "S3", 2),
-        ("INF303", "Réseaux Informatiques",                  3, 30, "Informatique", "L3", "S5", 3),
+        ("INF303", "Réseaux Informatiques",                  3, 30, "Informatique", "L3", "S6", 3),
         ("AGR101", "Introduction à l'Agriculture Numérique", 2, 20, "AgroTIC",     "L1", "S1", 2),
     ]
     for mod in modules:
@@ -158,12 +181,12 @@ if curseur.fetchone()[0] == 0:
     print("Evaluations de test insérées.")
 
 
-
+# ── Requêtes SQL de validation (Partie A3) ──────────────────
 print("\n" + "="*55)
 print("  REQUETES SQL DE VALIDATION (Partie A3)")
 print("="*55)
 
-
+# Requête 1 : Étudiants d'une filière donnée triés par nom
 print("\n1. Etudiants de la filière 'Informatique' triés par nom :")
 curseur.execute("""
     SELECT matricule, nom, prenom, niveau
@@ -174,7 +197,7 @@ curseur.execute("""
 for row in curseur.fetchall():
     print("  {0} - {1} {2} - {3}".format(row[0], row[1], row[2], row[3]))
 
-
+# Requête 2 : Modules avec le nom de l'enseignant responsable
 print("\n2. Modules avec leur enseignant responsable :")
 curseur.execute("""
     SELECT m.code, m.intitule, m.semestre,
@@ -186,7 +209,7 @@ curseur.execute("""
 for row in curseur.fetchall():
     print("  {0} - {1} | S:{2} | {3}".format(row[0], row[1], row[2], row[3]))
 
-
+# Requête 3 : Moyenne générale pondérée d'un étudiant
 print("\n3. Moyenne générale de l'étudiant id=1 (pondérée par coefficient) :")
 curseur.execute("""
     SELECT et.nom, et.prenom,
@@ -199,7 +222,7 @@ curseur.execute("""
 for row in curseur.fetchall():
     print("  {0} {1} → Moyenne : {2} / 20".format(row[0], row[1], row[2]))
 
-
+# Requête 4 : Étudiants ayant une note < 10
 print("\n4. Etudiants ayant au moins une note inférieure à 10 :")
 curseur.execute("""
     SELECT DISTINCT et.matricule, et.nom, et.prenom, et.filiere
@@ -211,7 +234,7 @@ curseur.execute("""
 for row in curseur.fetchall():
     print("  {0} - {1} {2} - {3}".format(row[0], row[1], row[2], row[3]))
 
-
+# Requête 5 : Taux de réussite par module
 print("\n5. Taux de réussite (note >= 10) par module :")
 curseur.execute("""
     SELECT m.code, m.intitule,
@@ -228,6 +251,10 @@ for row in curseur.fetchall():
 
 print("\n" + "="*55 + "\n")
 
+
+# ══════════════════════════════════════════════════════════════
+#  FONCTIONS ÉTUDIANTS
+# ══════════════════════════════════════════════════════════════
 
 def ajouter_etudiant(matricule, nom, prenom, date_naissance, email,
                      telephone, filiere, niveau, annee_inscription):
@@ -297,7 +324,9 @@ def get_etudiant_par_id(etudiant_id):
     return curseur.fetchone()
 
 
-
+# ══════════════════════════════════════════════════════════════
+#  FONCTIONS ENSEIGNANTS
+# ══════════════════════════════════════════════════════════════
 
 def ajouter_enseignant(matricule, nom, prenom, email, telephone,
                        specialite, grade, statut):
@@ -363,7 +392,9 @@ def get_enseignant_par_id(ens_id):
     return curseur.fetchone()
 
 
-
+# ══════════════════════════════════════════════════════════════
+#  FONCTIONS MODULES
+# ══════════════════════════════════════════════════════════════
 
 def ajouter_module(code, intitule, credits, volume_horaire,
                    filiere, niveau, semestre, enseignant_id):
@@ -423,7 +454,9 @@ def get_module_par_id(module_id):
     return curseur.fetchone()
 
 
-
+# ══════════════════════════════════════════════════════════════
+#  FONCTIONS EVALUATIONS
+# ══════════════════════════════════════════════════════════════
 
 def ajouter_evaluation(etudiant_id, module_id, type_eval, note,
                        coefficient, date_eval, semestre, annee_academique):
@@ -486,7 +519,9 @@ def get_evaluation_par_id(eval_id):
     return curseur.fetchone()
 
 
-
+# ══════════════════════════════════════════════════════════════
+#  STATISTIQUES
+# ══════════════════════════════════════════════════════════════
 
 def get_stats_globales():
     curseur.execute("SELECT COUNT(*) FROM etudiants")
