@@ -1,8 +1,16 @@
+# ============================================================
+# interface.py — Interface graphique Tkinter (CRUD complet)
+# SIGS - Système d'Information de Gestion de Scolarité
+# USSEIN | L3 Informatique | 2024-2025
+# ============================================================
+
 import tkinter as tk
 from tkinter import ttk, messagebox
 import basedonnees as bd
 
-
+# ══════════════════════════════════════════════════════════════
+#  PALETTE & TOKENS
+# ══════════════════════════════════════════════════════════════
 C = {
     "bg":        "#F0EBE3",
     "surface":   "#FFFFFF",
@@ -32,7 +40,9 @@ FONT_TABLE = ("Segoe UI", 9)
 PAD = 8
 
 
-
+# ══════════════════════════════════════════════════════════════
+#  COMPOSANTS DE BASE
+# ══════════════════════════════════════════════════════════════
 
 def mk_btn(parent, text, cmd, color=None, hover_color=None, w=12, fg="#FFFFFF"):
     color = color or C["accent"]
@@ -134,10 +144,17 @@ def barre_recherche(parent, callback):
     """Retourne un frame avec champ de recherche."""
     f = tk.Frame(parent, bg=C["surface"],
                  highlightthickness=1, highlightbackground=C["border"])
-    tk.Label(f, text="", bg=C["surface"], fg=C["text2"],
+    tk.Label(f, text="🔍", bg=C["surface"], fg=C["text2"],
              font=FONT_LABEL).pack(side="left", padx=(6, 2))
     var = tk.StringVar()
-    var.trace_add("write", lambda *_: callback(var.get()))
+    def _safe_callback(*_):
+        try:
+            callback(var.get())
+        except AttributeError:
+            # Le widget appelant (ex: self.tree) n'est pas encore
+            # construit au moment où le texte placeholder est inséré.
+            pass
+    var.trace_add("write", _safe_callback)
     e = tk.Entry(f, textvariable=var, bg=C["surface"], fg=C["text"],
                  relief="flat", font=FONT_LABEL, insertbackground=C["accent"])
     e.pack(side="left", fill="x", expand=True, ipady=5, padx=(0, 6))
@@ -173,7 +190,9 @@ def section_card(parent, titre):
     return outer, body
 
 
-
+# ══════════════════════════════════════════════════════════════
+#  ONGLET ÉTUDIANTS
+# ══════════════════════════════════════════════════════════════
 
 class OngletEtudiants(tk.Frame):
     COLS = ("ID","Matricule","Nom","Prénom","Naissance","Email","Téléphone","Filière","Niveau","Année")
@@ -189,10 +208,10 @@ class OngletEtudiants(tk.Frame):
         self.grid_rowconfigure(1, weight=1)
         self.grid_columnconfigure(0, weight=1)
 
-        
+        # ── Ligne 0 : titre + recherche ──────────────────
         top = tk.Frame(self, bg=C["bg"])
         top.grid(row=0, column=0, sticky="ew", padx=PAD, pady=(PAD, 4))
-        tk.Label(top, text="  Gestion des Étudiants",
+        tk.Label(top, text="👨‍🎓  Gestion des Étudiants",
                  bg=C["bg"], fg=C["text"], font=FONT_TITLE).pack(side="left")
         barre_recherche(top,
             lambda t: charger_tree(self.tree,
@@ -200,31 +219,31 @@ class OngletEtudiants(tk.Frame):
                 else bd.get_tous_etudiants())
         ).pack(side="right", fill="x", expand=True, padx=(12, 0))
 
-        
+        # ── Ligne 1 : tableau (expand) ───────────────────
         ft, self.tree = creer_treeview(self, self.COLS, self.LARG)
         ft.grid(row=1, column=0, sticky="nsew", padx=PAD, pady=(0, 4))
         self.tree.bind("<<TreeviewSelect>>", self._on_sel)
 
-        
-        card_outer, b = section_card(self, "️  Fiche Étudiant")
+        # ── Ligne 2 : formulaire (taille fixe) ───────────
+        card_outer, b = section_card(self, "✏️  Fiche Étudiant")
         card_outer.grid(row=2, column=0, sticky="ew", padx=PAD, pady=(0, 4))
 
         self.v = {k: tk.StringVar() for k in
                   ["mat","nom","prenom","naiss","email","tel","filiere","niveau","annee"]}
 
-        
+        # Ligne A : 3 champs texte
         for i, (lbl, key) in enumerate([("Matricule *","mat"),("Nom *","nom"),("Prénom *","prenom")]):
             tk.Label(b, text=lbl, bg=C["surface"], fg=C["text2"], font=FONT_SMALL, anchor="w"
                      ).grid(row=0, column=i*2, sticky="w", padx=(0,4))
             mk_entry(b, self.v[key], w=16).grid(row=1, column=i*2, sticky="ew", padx=(0,10), pady=(2,4))
 
-        
+        # Ligne B : 3 champs texte
         for i, (lbl, key) in enumerate([("Date naissance","naiss"),("Email","email"),("Téléphone","tel")]):
             tk.Label(b, text=lbl, bg=C["surface"], fg=C["text2"], font=FONT_SMALL, anchor="w"
                      ).grid(row=2, column=i*2, sticky="w", padx=(0,4))
             mk_entry(b, self.v[key], w=16).grid(row=3, column=i*2, sticky="ew", padx=(0,10), pady=(2,4))
 
-        
+        # Ligne C : filière / niveau / année
         specs = [("Filière","filiere",["Informatique","MPI","AgroTIC","SVT","Autre"],14),
                  ("Niveau","niveau",["L1","L2","L3","M1","M2"],8),
                  ("Année inscription","annee",None,8)]
@@ -239,13 +258,13 @@ class OngletEtudiants(tk.Frame):
         for i in range(6):
             b.grid_columnconfigure(i, weight=1)
 
-        
+        # ── Ligne 3 : boutons (taille fixe) ──────────────
         bbar = bandeau_boutons(self, [
-            (" Ajouter",    self.ajouter,   C["accent"],  C["accent_h"], "#FFF"),
-            (" Modifier",    self.modifier,  C["gold"],    C["gold_h"],   C["text"]),
-            (" Supprimer",   self.supprimer, C["danger"],  C["danger_h"], "#FFF"),
-            (" Actualiser",  self.charger,   C["text2"],   "#4B5563",     "#FFF"),
-            (" Effacer",     self._effacer,  C["border"],  "#C0B8B0",     C["text"]),
+            ("＋ Ajouter",    self.ajouter,   C["accent"],  C["accent_h"], "#FFF"),
+            ("✎ Modifier",    self.modifier,  C["gold"],    C["gold_h"],   C["text"]),
+            ("✕ Supprimer",   self.supprimer, C["danger"],  C["danger_h"], "#FFF"),
+            ("↺ Actualiser",  self.charger,   C["text2"],   "#4B5563",     "#FFF"),
+            ("⌫ Effacer",     self._effacer,  C["border"],  "#C0B8B0",     C["text"]),
         ])
         bbar.grid(row=3, column=0, sticky="ew", padx=PAD, pady=(0, PAD))
 
@@ -280,7 +299,7 @@ class OngletEtudiants(tk.Frame):
                 messagebox.showwarning("Champ manquant", "Matricule et Nom sont obligatoires.")
                 return
             bd.ajouter_etudiant(*self._vals())
-            messagebox.showinfo("Succès", "Étudiant ajouté ")
+            messagebox.showinfo("Succès", "Étudiant ajouté ✓")
             self.charger()
         except Exception as e:
             messagebox.showerror("Erreur", str(e))
@@ -291,7 +310,7 @@ class OngletEtudiants(tk.Frame):
             return
         try:
             bd.modifier_etudiant(self._id, *self._vals())
-            messagebox.showinfo("Succès", "Étudiant modifié ")
+            messagebox.showinfo("Succès", "Étudiant modifié ✓")
             self.charger()
         except Exception as e:
             messagebox.showerror("Erreur", str(e))
@@ -310,7 +329,9 @@ class OngletEtudiants(tk.Frame):
                 messagebox.showerror("Erreur", str(e))
 
 
-
+# ══════════════════════════════════════════════════════════════
+#  ONGLET ENSEIGNANTS
+# ══════════════════════════════════════════════════════════════
 
 class OngletEnseignants(tk.Frame):
     COLS = ("ID","Matricule","Nom","Prénom","Email","Téléphone","Spécialité","Grade","Statut")
@@ -328,7 +349,7 @@ class OngletEnseignants(tk.Frame):
 
         top = tk.Frame(self, bg=C["bg"])
         top.grid(row=0, column=0, sticky="ew", padx=PAD, pady=(PAD, 4))
-        tk.Label(top, text="‍  Gestion des Enseignants",
+        tk.Label(top, text="👨‍🏫  Gestion des Enseignants",
                  bg=C["bg"], fg=C["text"], font=FONT_TITLE).pack(side="left")
         barre_recherche(top,
             lambda t: charger_tree(self.tree,
@@ -368,11 +389,11 @@ class OngletEnseignants(tk.Frame):
         b.grid_columnconfigure(1, weight=1)
 
         bbar = bandeau_boutons(self, [
-            (" Ajouter",   self.ajouter,   C["accent"],  C["accent_h"], "#FFF"),
-            (" Modifier",   self.modifier,  C["gold"],    C["gold_h"],   C["text"]),
-            (" Supprimer",  self.supprimer, C["danger"],  C["danger_h"], "#FFF"),
-            (" Actualiser", self.charger,   C["text2"],   "#4B5563",     "#FFF"),
-            (" Effacer",    self._effacer,  C["border"],  "#C0B8B0",     C["text"]),
+            ("＋ Ajouter",   self.ajouter,   C["accent"],  C["accent_h"], "#FFF"),
+            ("✎ Modifier",   self.modifier,  C["gold"],    C["gold_h"],   C["text"]),
+            ("✕ Supprimer",  self.supprimer, C["danger"],  C["danger_h"], "#FFF"),
+            ("↺ Actualiser", self.charger,   C["text2"],   "#4B5563",     "#FFF"),
+            ("⌫ Effacer",    self._effacer,  C["border"],  "#C0B8B0",     C["text"]),
         ])
         bbar.grid(row=3, column=0, sticky="ew", padx=PAD, pady=(0, PAD))
 
@@ -406,7 +427,7 @@ class OngletEnseignants(tk.Frame):
                 messagebox.showwarning("Champ manquant", "Matricule et Nom sont obligatoires.")
                 return
             bd.ajouter_enseignant(*self._vals())
-            messagebox.showinfo("Succès", "Enseignant ajouté ")
+            messagebox.showinfo("Succès", "Enseignant ajouté ✓")
             self.charger()
         except Exception as e:
             messagebox.showerror("Erreur", str(e))
@@ -417,7 +438,7 @@ class OngletEnseignants(tk.Frame):
             return
         try:
             bd.modifier_enseignant(self._id, *self._vals())
-            messagebox.showinfo("Succès", "Enseignant modifié ")
+            messagebox.showinfo("Succès", "Enseignant modifié ✓")
             self.charger()
         except Exception as e:
             messagebox.showerror("Erreur", str(e))
@@ -436,7 +457,9 @@ class OngletEnseignants(tk.Frame):
                 messagebox.showerror("Erreur", str(e))
 
 
-
+# ══════════════════════════════════════════════════════════════
+#  ONGLET MODULES
+# ══════════════════════════════════════════════════════════════
 
 class OngletModules(tk.Frame):
     COLS = ("ID","Code","Intitulé","Crédits","Vol.H","Filière","Niveau","Semestre","Enseignant")
@@ -462,7 +485,7 @@ class OngletModules(tk.Frame):
         ft.grid(row=1, column=0, sticky="nsew", padx=PAD, pady=(0, 4))
         self.tree.bind("<<TreeviewSelect>>", self._on_sel)
 
-        card_outer, b = section_card(self, "️  Fiche Module")
+        card_outer, b = section_card(self, "✏️  Fiche Module")
         card_outer.grid(row=2, column=0, sticky="ew", padx=PAD, pady=(0, 4))
 
         self.v = {k: tk.StringVar() for k in
@@ -470,18 +493,18 @@ class OngletModules(tk.Frame):
         self.v["credits"].set("3")
         self.v["volume"].set("30")
 
-        
+        # Ligne 1 : code, crédits, volume
         for i, (lbl, key, w) in enumerate([("Code *","code",10),("Crédits","credits",5),("Vol. horaire","volume",5)]):
             tk.Label(b, text=lbl, bg=C["surface"], fg=C["text2"], font=FONT_SMALL, anchor="w"
                      ).grid(row=0, column=i, sticky="w", padx=(0,6))
             mk_entry(b, self.v[key], w=w).grid(row=1, column=i, sticky="ew", padx=(0,10), pady=(2,4))
 
-        
+        # Ligne 2 : intitulé (pleine largeur)
         tk.Label(b, text="Intitulé *", bg=C["surface"], fg=C["text2"], font=FONT_SMALL, anchor="w"
                  ).grid(row=2, column=0, columnspan=3, sticky="w")
         mk_entry(b, self.v["intitule"], w=55).grid(row=3, column=0, columnspan=3, sticky="ew", pady=(2,4))
 
-        
+        # Ligne 3 : filière, niveau, semestre
         specs = [("Filière","filiere",["Informatique","MPI","AgroTIC","SVT","Autre"],14),
                  ("Niveau","niveau",["L1","L2","L3","M1","M2"],8),
                  ("Semestre","semestre",["S1","S2","S3","S4","S5","S6"],6)]
@@ -490,7 +513,7 @@ class OngletModules(tk.Frame):
                      ).grid(row=4, column=i, sticky="w", padx=(0,6))
             mk_combo(b, self.v[key], vals, w=w).grid(row=5, column=i, sticky="ew", padx=(0,10), pady=(2,4))
 
-        
+        # Ligne 4 : enseignant
         tk.Label(b, text="Enseignant responsable", bg=C["surface"], fg=C["text2"], font=FONT_SMALL, anchor="w"
                  ).grid(row=6, column=0, columnspan=3, sticky="w")
         self.combo_ens = mk_combo(b, self.v["ens"], [], w=50)
@@ -500,11 +523,11 @@ class OngletModules(tk.Frame):
             b.grid_columnconfigure(i, weight=1)
 
         bbar = bandeau_boutons(self, [
-            (" Ajouter",   self.ajouter,   C["accent"],  C["accent_h"], "#FFF"),
-            (" Modifier",   self.modifier,  C["gold"],    C["gold_h"],   C["text"]),
-            (" Supprimer",  self.supprimer, C["danger"],  C["danger_h"], "#FFF"),
-            (" Actualiser", self.charger,   C["text2"],   "#4B5563",     "#FFF"),
-            (" Effacer",    self._effacer,  C["border"],  "#C0B8B0",     C["text"]),
+            ("＋ Ajouter",   self.ajouter,   C["accent"],  C["accent_h"], "#FFF"),
+            ("✎ Modifier",   self.modifier,  C["gold"],    C["gold_h"],   C["text"]),
+            ("✕ Supprimer",  self.supprimer, C["danger"],  C["danger_h"], "#FFF"),
+            ("↺ Actualiser", self.charger,   C["text2"],   "#4B5563",     "#FFF"),
+            ("⌫ Effacer",    self._effacer,  C["border"],  "#C0B8B0",     C["text"]),
         ])
         bbar.grid(row=3, column=0, sticky="ew", padx=PAD, pady=(0, PAD))
 
@@ -553,7 +576,7 @@ class OngletModules(tk.Frame):
                 messagebox.showwarning("Champ manquant", "Code et Intitulé sont obligatoires.")
                 return
             bd.ajouter_module(*self._vals())
-            messagebox.showinfo("Succès", "Module ajouté ")
+            messagebox.showinfo("Succès", "Module ajouté ✓")
             self.charger()
         except Exception as e:
             messagebox.showerror("Erreur", str(e))
@@ -564,7 +587,7 @@ class OngletModules(tk.Frame):
             return
         try:
             bd.modifier_module(self._id, *self._vals())
-            messagebox.showinfo("Succès", "Module modifié ")
+            messagebox.showinfo("Succès", "Module modifié ✓")
             self.charger()
         except Exception as e:
             messagebox.showerror("Erreur", str(e))
@@ -582,7 +605,9 @@ class OngletModules(tk.Frame):
                 messagebox.showerror("Erreur", str(e))
 
 
-
+# ══════════════════════════════════════════════════════════════
+#  ONGLET ÉVALUATIONS
+# ══════════════════════════════════════════════════════════════
 
 class OngletEvaluations(tk.Frame):
     COLS = ("ID","Étudiant","Module","Type","Note","Coeff.","Date","Semestre","Année")
@@ -602,14 +627,14 @@ class OngletEvaluations(tk.Frame):
 
         top = tk.Frame(self, bg=C["bg"])
         top.grid(row=0, column=0, sticky="ew", padx=PAD, pady=(PAD, 4))
-        tk.Label(top, text="  Saisie des Notes & Évaluations",
+        tk.Label(top, text="📝  Saisie des Notes & Évaluations",
                  bg=C["bg"], fg=C["text"], font=FONT_TITLE).pack(side="left")
 
         ft, self.tree = creer_treeview(self, self.COLS, self.LARG)
         ft.grid(row=1, column=0, sticky="nsew", padx=PAD, pady=(0, 4))
         self.tree.bind("<<TreeviewSelect>>", self._on_sel)
 
-        card_outer, b = section_card(self, "️  Nouvelle Évaluation")
+        card_outer, b = section_card(self, "✏️  Nouvelle Évaluation")
         card_outer.grid(row=2, column=0, sticky="ew", padx=PAD, pady=(0, 4))
 
         self.v = {k: tk.StringVar() for k in
@@ -617,19 +642,19 @@ class OngletEvaluations(tk.Frame):
         self.v["coef"].set("1.0")
         self.v["annee"].set("2024-2025")
 
-        
+        # Ligne 1 : étudiant
         tk.Label(b, text="Étudiant *", bg=C["surface"], fg=C["text2"], font=FONT_SMALL, anchor="w"
                  ).grid(row=0, column=0, columnspan=4, sticky="w")
         self.combo_etu = mk_combo(b, self.v["etu"], [], w=55)
         self.combo_etu.grid(row=1, column=0, columnspan=4, sticky="ew", padx=(0,10), pady=(2,4))
 
-        
+        # Ligne 2 : module
         tk.Label(b, text="Module *", bg=C["surface"], fg=C["text2"], font=FONT_SMALL, anchor="w"
                  ).grid(row=2, column=0, columnspan=4, sticky="w")
         self.combo_mod = mk_combo(b, self.v["mod"], [], w=55)
         self.combo_mod.grid(row=3, column=0, columnspan=4, sticky="ew", padx=(0,10), pady=(2,4))
 
-        
+        # Ligne 3 : type, semestre, note, coef, date, année
         row3 = [
             ("Type *",          "type", ["CC","TP","Examen","Rattrapage"], True,  10),
             ("Semestre",        "sem",  ["S1","S2","S3","S4","S5","S6"],   True,  6),
@@ -650,11 +675,11 @@ class OngletEvaluations(tk.Frame):
             b.grid_columnconfigure(i, weight=1)
 
         bbar = bandeau_boutons(self, [
-            (" Enregistrer", self.ajouter,   C["accent"],  C["accent_h"], "#FFF"),
-            (" Modifier",     self.modifier,  C["gold"],    C["gold_h"],   C["text"]),
-            (" Supprimer",    self.supprimer, C["danger"],  C["danger_h"], "#FFF"),
-            (" Actualiser",   self.charger,   C["text2"],   "#4B5563",     "#FFF"),
-            (" Effacer",      self._effacer,  C["border"],  "#C0B8B0",     C["text"]),
+            ("＋ Enregistrer", self.ajouter,   C["accent"],  C["accent_h"], "#FFF"),
+            ("✎ Modifier",     self.modifier,  C["gold"],    C["gold_h"],   C["text"]),
+            ("✕ Supprimer",    self.supprimer, C["danger"],  C["danger_h"], "#FFF"),
+            ("↺ Actualiser",   self.charger,   C["text2"],   "#4B5563",     "#FFF"),
+            ("⌫ Effacer",      self._effacer,  C["border"],  "#C0B8B0",     C["text"]),
         ])
         bbar.grid(row=3, column=0, sticky="ew", padx=PAD, pady=(0, PAD))
 
@@ -755,7 +780,9 @@ class OngletEvaluations(tk.Frame):
                 messagebox.showerror("Erreur", str(e))
 
 
-
+# ══════════════════════════════════════════════════════════════
+#  ONGLET TABLEAU DE BORD
+# ══════════════════════════════════════════════════════════════
 
 class OngletTableauBord(tk.Frame):
     def __init__(self, parent):
@@ -767,20 +794,20 @@ class OngletTableauBord(tk.Frame):
         self.grid_rowconfigure(1, weight=1)
         self.grid_columnconfigure(0, weight=1)
 
-        tk.Label(self, text="  Tableau de Bord",
+        tk.Label(self, text="📊  Tableau de Bord",
                  bg=C["bg"], fg=C["text"],
                  font=FONT_TITLE).grid(row=0, column=0, sticky="w",
                                        padx=PAD, pady=(PAD, 6))
 
-        
+        # Cartes statistiques
         cartes = tk.Frame(self, bg=C["bg"])
         cartes.grid(row=0, column=0, sticky="e", padx=PAD, pady=(PAD, 6))
 
         infos = [
-            ("etudiants",   "Étudiants",   "", C["accent"]),
-            ("enseignants", "Enseignants", "", C["gold"]),
-            ("modules",     "Modules",     "",  "#7C3AED"),
-            ("evaluations", "Évaluations", "",  C["danger"]),
+            ("etudiants",   "Étudiants",   "👨‍🎓", C["accent"]),
+            ("enseignants", "Enseignants", "👨‍🏫", C["gold"]),
+            ("modules",     "Modules",     "📚",  "#7C3AED"),
+            ("evaluations", "Évaluations", "📝",  C["danger"]),
         ]
         self.lbl_stats = {}
         for i, (key, titre, icone, color) in enumerate(infos):
@@ -799,7 +826,7 @@ class OngletTableauBord(tk.Frame):
                      font=FONT_SMALL).pack(anchor="w")
             self.lbl_stats[key] = lbl
 
-        
+        # Tableau taux de réussite
         tk.Label(self, text="Taux de réussite par module",
                  bg=C["bg"], fg=C["text"],
                  font=("Segoe UI Semibold", 10)
