@@ -1,3 +1,9 @@
+# ============================================================
+# principal.py — Point d'entrée de l'application SIGS
+# SIGS - Système d'Information de Gestion de Scolarité
+# USSEIN | L3 Informatique | 2024-2025
+# ============================================================
+
 import tkinter as tk
 from tkinter import ttk, messagebox
 import basedonnees as bd
@@ -14,7 +20,7 @@ class ApplicationPrincipale(tk.Tk):
     def __init__(self):
         super().__init__()
         self.title(APP_NOM)
-        self.state("zoomed")   
+        self.state("zoomed")   # plein écran Windows
         self.minsize(1000, 700)
         self.configure(bg=C["bg"])
         try:
@@ -29,8 +35,9 @@ class ApplicationPrincipale(tk.Tk):
         self._build()
         self._naviguer("dashboard")
 
-    
+    # ── Construction ───────────────────────────────────────
     def _build(self):
+        # Conteneur principal : sidebar gauche + contenu droit
         self.grid_rowconfigure(0, weight=1)
         self.grid_columnconfigure(1, weight=1)
 
@@ -42,33 +49,33 @@ class ApplicationPrincipale(tk.Tk):
         sidebar.grid(row=0, column=0, sticky="ns")
         sidebar.grid_propagate(False)
 
-        
+        # Logo / titre
         logo_frame = tk.Frame(sidebar, bg=C["sidebar"])
         logo_frame.pack(fill="x", pady=(24, 8))
-        tk.Label(logo_frame, text="", bg=C["sidebar"],
+        tk.Label(logo_frame, text="🎓", bg=C["sidebar"],
                  fg="#FFFFFF", font=("Segoe UI", 28)).pack()
         tk.Label(logo_frame, text="SIGS", bg=C["sidebar"],
                  fg="#FFFFFF", font=("Segoe UI Semibold", 16)).pack()
         tk.Label(logo_frame, text="Scolarité USSEIN", bg=C["sidebar"],
                  fg="#A0B8AD", font=("Segoe UI", 8)).pack()
 
-        
+        # Séparateur
         tk.Frame(sidebar, bg="#2D5543", height=1).pack(fill="x", padx=16, pady=(8, 16))
 
-        
+        # Boutons de navigation
         nav_items = [
-            ("dashboard",    "",  "Tableau de bord"),
-            ("etudiants",    "‍", "Étudiants"),
-            ("enseignants",  "‍", "Enseignants"),
-            ("modules",      "",  "Modules"),
-            ("evaluations",  "",  "Évaluations"),
+            ("dashboard",    "📊",  "Tableau de bord"),
+            ("etudiants",    "👨‍🎓", "Étudiants"),
+            ("enseignants",  "👨‍🏫", "Enseignants"),
+            ("modules",      "📚",  "Modules"),
+            ("evaluations",  "📝",  "Évaluations"),
         ]
         for key, icone, texte in nav_items:
             b = self._nav_btn(sidebar, key, icone, texte)
             b.pack(fill="x", padx=8, pady=2)
             self._nav_btns[key] = b
 
-        
+        # Version en bas
         tk.Label(sidebar, text="v1.0 | 2024-2025",
                  bg=C["sidebar"], fg="#4A7A62",
                  font=("Segoe UI", 8)).pack(side="bottom", pady=12)
@@ -98,7 +105,7 @@ class ApplicationPrincipale(tk.Tk):
             w.bind("<Enter>",    on_enter)
             w.bind("<Leave>",    on_leave)
 
-        f._lbl = lbl   
+        f._lbl = lbl   # référence pour _naviguer
         return f
 
     def _build_content(self):
@@ -107,7 +114,7 @@ class ApplicationPrincipale(tk.Tk):
         self.content.grid_rowconfigure(1, weight=1)
         self.content.grid_columnconfigure(0, weight=1)
 
-        
+        # Bandeau supérieur
         topbar = tk.Frame(self.content, bg=C["surface"],
                           highlightthickness=1,
                           highlightbackground=C["border"])
@@ -125,11 +132,11 @@ class ApplicationPrincipale(tk.Tk):
                  bg=C["surface"], fg=C["text2"],
                  font=("Segoe UI", 8), padx=16).pack(side="right")
 
-        
+        # Zone des pages
         self.zone_pages = tk.Frame(self.content, bg=C["bg"])
         self.zone_pages.grid(row=1, column=0, sticky="nsew")
 
-        
+        # Créer toutes les pages (non affichées au départ)
         classes = {
             "dashboard":   OngletTableauBord,
             "etudiants":   OngletEtudiants,
@@ -138,20 +145,20 @@ class ApplicationPrincipale(tk.Tk):
             "evaluations": OngletEvaluations,
         }
         titres = {
-            "dashboard":   "  Tableau de Bord",
-            "etudiants":   "  Étudiants",
-            "enseignants": "  Enseignants",
-            "modules":     "  Modules",
-            "evaluations": "  Évaluations",
+            "dashboard":   "📊  Tableau de Bord",
+            "etudiants":   "👨‍🎓  Étudiants",
+            "enseignants": "👨‍🏫  Enseignants",
+            "modules":     "📚  Modules",
+            "evaluations": "📝  Évaluations",
         }
         self._titres = titres
         for key, Cls in classes.items():
             page = Cls(self.zone_pages)
-            
+            # Ne pas afficher tout de suite
             self._pages[key] = page
 
     def _naviguer(self, key):
-        
+        # Mettre à jour la sidebar
         for k, frame in self._nav_btns.items():
             lbl = frame._lbl
             if k == key:
@@ -164,20 +171,28 @@ class ApplicationPrincipale(tk.Tk):
         self._page_active = key
         self.lbl_topbar.config(text=self._titres.get(key, ""))
 
-        
+        # Cacher toutes les pages puis afficher la bonne
         for k, page in self._pages.items():
             page.pack_forget()
         self._pages[key].pack(fill="both", expand=True)
 
-        
-        if key == "dashboard":
-            try:
-                self._pages["dashboard"].actualiser()
-            except Exception:
-                pass
+        # Actualiser la page à chaque fois qu'on y accède
+        # (important : recharge aussi les listes déroulantes liées
+        #  à d'autres tables, ex: Enseignant dans Modules,
+        #  Étudiant/Module dans Évaluations)
+        try:
+            page = self._pages[key]
+            if hasattr(page, "actualiser"):
+                page.actualiser()
+            elif hasattr(page, "charger"):
+                page.charger()
+        except Exception:
+            pass
 
 
-
+# ══════════════════════════════════════════════════════════════
+#  POINT D'ENTRÉE
+# ══════════════════════════════════════════════════════════════
 
 def main():
     if not bd.db.is_connected():

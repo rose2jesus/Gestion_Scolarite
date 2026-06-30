@@ -84,16 +84,16 @@ CREATE TABLE evaluations (
 
 -- Enseignants (3 avec grades différents)
 INSERT INTO enseignants (matricule, nom, prenom, email, telephone, specialite, grade, statut) VALUES
-('ENS001', 'DIALLO',  'Mamadou',   'mdiallo@ussein.sn',  '771234567', 'Informatique',        'Maître de Conférences', 'Permanent'),
+('ENS001', 'DIENE',  'Bassirou',   'bdiene@ussein.sn',  '771234567', 'Informatique',        'Maître de Conférences', 'Permanent'),
 ('ENS002', 'SARR',    'Fatou',     'fsarr@ussein.sn',    '772345678', 'Mathématiques',       'Professeur Titulaire',  'Permanent'),
-('ENS003', 'NDIAYE',  'Ibrahima',  'indiaye@ussein.sn',  '773456789', 'Réseaux & Systèmes', 'Assistant',             'Vacataire');
+('ENS003', 'FAYE',  'Pascal',  'pfaye@ussein.sn',  '773456789', 'Réseaux & Systèmes', 'Assistant',             'Vacataire');
 
 -- Étudiants (5 de filières et niveaux différents)
 INSERT INTO etudiants (matricule, nom, prenom, date_naissance, email, telephone, filiere, niveau, annee_inscription) VALUES
-('ETU2024001', 'BA',       'Aminata',  '2002-03-15', 'aba@etud.ussein.sn',   '774111111', 'Informatique', 'L3', 2022),
+('ETU2024001', 'DIA',       'Khadidiatou',  '2002-03-15', 'kdia@etud.ussein.sn',   '774111111', 'Informatique', 'L3', 2022),
 ('ETU2024002', 'FALL',     'Ousmane',  '2001-07-22', 'ofall@etud.ussein.sn', '774222222', 'MPI',          'L2', 2023),
 ('ETU2024003', 'GUEYE',    'Mariama',  '2003-01-10', 'mgueye@etud.ussein.sn','774333333', 'AgroTIC',      'L1', 2024),
-('ETU2024004', 'DIOP',     'Cheikh',   '2000-11-05', 'cdiop@etud.ussein.sn', '774444444', 'Informatique', 'L3', 2022),
+('ETU2024004', 'SYLVA',     'Rose',   '2000-11-05', 'rsylva@etud.ussein.sn', '774444444', 'Informatique', 'L3', 2022),
 ('ETU2024005', 'MBAYE',    'Rokhaya',  '2002-06-28', 'rmbaye@etud.ussein.sn','774555555', 'MPI',          'L2', 2023);
 
 -- Modules (5 couvrant 2 semestres)
@@ -108,11 +108,11 @@ INSERT INTO modules (code, intitule, credits, volume_horaire, filiere, niveau, s
 INSERT INTO evaluations (etudiant_id, module_id, type_eval, note, coefficient, date_eval, semestre, annee_academique) VALUES
 (1, 1, 'CC',     14.50, 1.0, '2025-01-15', 'S5', '2024-2025'),
 (1, 1, 'Examen', 16.00, 2.0, '2025-02-10', 'S5', '2024-2025'),
-(1, 2, 'CC',      8.50, 1.0, '2025-01-20', 'S5', '2024-2025'),
+(1, 2, 'CC',      18.50, 1.0, '2025-01-20', 'S5', '2024-2025'),
 (2, 3, 'CC',     12.00, 1.0, '2025-01-18', 'S3', '2024-2025'),
 (2, 3, 'Examen', 11.00, 2.0, '2025-02-12', 'S3', '2024-2025'),
 (3, 5, 'TP',     15.00, 1.0, '2025-01-25', 'S1', '2024-2025'),
-(4, 1, 'CC',      7.00, 1.0, '2025-01-15', 'S5', '2024-2025'),
+(4, 1, 'CC',      18.00, 1.0, '2025-01-15', 'S5', '2024-2025'),
 (4, 1, 'Examen',  9.50, 2.0, '2025-02-10', 'S5', '2024-2025'),
 (4, 2, 'TP',     13.00, 1.0, '2025-01-22', 'S5', '2024-2025'),
 (5, 3, 'CC',     18.00, 1.0, '2025-01-18', 'S3', '2024-2025');
