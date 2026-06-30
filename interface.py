@@ -769,7 +769,7 @@ class OngletEvaluations(tk.Frame):
 
     def supprimer(self):
         if not self._id:
-            messagebox.showwarning("Sélection", "Cliquez sur une évaluation dans le tableau.")
+            messagebox.showwarning("Sélection", "Cliquez d'abord sur une évaluation dans le tableau s'il vous plait !!!")
             return
         if messagebox.askyesno("Confirmer", "Supprimer cette évaluation ?"):
             try:
