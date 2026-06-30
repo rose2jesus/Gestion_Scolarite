@@ -523,7 +523,7 @@ class OngletModules(tk.Frame):
             b.grid_columnconfigure(i, weight=1)
 
         bbar = bandeau_boutons(self, [
-            ("＋ Ajouter",   self.ajouter,   C["accent"],  C["accent_h"], "#FFF"),
+            (" Ajouter",   self.ajouter,   C["accent"],  C["accent_h"], "#FFF"),
             ("✎ Modifier",   self.modifier,  C["gold"],    C["gold_h"],   C["text"]),
             ("✕ Supprimer",  self.supprimer, C["danger"],  C["danger_h"], "#FFF"),
             ("↺ Actualiser", self.charger,   C["text2"],   "#4B5563",     "#FFF"),
