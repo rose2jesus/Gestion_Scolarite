@@ -434,7 +434,7 @@ class OngletEnseignants(tk.Frame):
 
     def modifier(self):
         if not self._id:
-            messagebox.showwarning("Sélection", "Cliquez d'abord sur un enseignant dans le tableau.")
+            messagebox.showwarning("Sélection", "Cliquez d'abord sur un enseignant.")
             return
         try:
             bd.modifier_enseignant(self._id, *self._vals())
@@ -445,7 +445,7 @@ class OngletEnseignants(tk.Frame):
 
     def supprimer(self):
         if not self._id:
-            messagebox.showwarning("Sélection", "Cliquez d'abord sur un enseignant dans le tableau.")
+            messagebox.showwarning("Sélection", "Cliquez d'abord sur un enseignant.")
             return
         nom = f"{self.v['prenom'].get()} {self.v['nom'].get()}"
         if messagebox.askyesno("Confirmer", f"Supprimer {nom} ?"):
@@ -758,7 +758,7 @@ class OngletEvaluations(tk.Frame):
 
     def modifier(self):
         if not self._id:
-            messagebox.showwarning("Sélection", "Cliquez d'abord sur une évaluation dans le tableau.")
+            messagebox.showwarning("Sélection", "Vous devez d'abord cliquer sur une évaluation dans le tableau.")
             return
         try:
             bd.modifier_evaluation(self._id, *self._vals())
