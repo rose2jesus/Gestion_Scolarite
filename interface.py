@@ -758,7 +758,7 @@ class OngletEvaluations(tk.Frame):
 
     def modifier(self):
         if not self._id:
-            messagebox.showwarning("Sélection", "Cliquez d'abord sur une évaluation dans le tableau.")
+            messagebox.showwarning("Sélection", "Vous devez d'abord cliquer sur une évaluation dans le tableau.")
             return
         try:
             bd.modifier_evaluation(self._id, *self._vals())
